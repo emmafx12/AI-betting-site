@@ -632,43 +632,93 @@
             messagesContainer.appendChild(messageDiv);
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
         }
+<script>
+    const games = [];
+    let totalPredictions = 0;
+    let accuratePredictions = 0;
+    const predictionsCache = {}; // Cache to store predictions
 
-        // Function to add a new game
-        function addGame(game) {
-            games.push(game);
-            updateGamesDisplay();
-            updateStats();
+    function generatePrediction(team1, team2) {
+        const key = `${team1}-${team2}`;
+        if (predictionsCache[key]) {
+            return predictionsCache[key]; // Return cached prediction if it exists
         }
 
-        // Function to update the games display (simplified without animation classes)
-        function updateGamesDisplay() {
-            const gamesContainer = document.getElementById('games');
-            gamesContainer.innerHTML = '';
+        const randomConfidence = Math.floor(Math.random() * 30) + 60;
+        const momentum = Math.random();
+        const form = Math.random();
+        const headToHead = Math.random();
 
-            games.forEach((game) => {
-                const gameCard = document.createElement('div');
-                gameCard.className = 'game-card';
-                
-                gameCard.innerHTML = `
-                    <h3>${game.team1} vs ${game.team2}</h3>
-                    <p>Date: ${game.date}</p>
-                    <p class="prediction">AI Prediction: ${game.prediction}</p>
-                    <p class="update-time">Generated: ${new Date().toLocaleTimeString()}</p>
-                `;
-                gamesContainer.appendChild(gameCard);
-            });
+        const team1Score = (momentum * 0.3) + (form * 0.4) + (headToHead * 0.3);
+        const team2Score = (1 - momentum * 0.3) + (1 - form * 0.4) + (1 - headToHead * 0.3);
+        
+        const prediction = {
+            winner: team1Score > team2Score ? team1 : team2,
+            confidence: randomConfidence,
+            momentum: momentum
+        };
+
+        predictionsCache[key] = prediction; // Store prediction in cache
+        return prediction;
+    }
+
+    document.getElementById('prediction-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const team1Input = document.getElementById('team1-input');
+        const team2Input = document.getElementById('team2-input');
+        
+        if (!team1Input.value.trim() || !team2Input.value.trim()) {
+            alert('Please enter both team names');
+            return;
         }
-
-        // Initialize with a sample prediction
+        
+        const prediction = generatePrediction(team1Input.value, team2Input.value);
+        
         addGame({
-            team1: 'Team A',
-            team2: 'Team B',
-            date: '2024-03-20',
-            prediction: 'Team A (75% confidence)'
+            team1: team1Input.value.trim(),
+            team2: team2Input.value.trim(),
+            date: new Date().toLocaleDateString(),
+            prediction: `${prediction.winner} (${prediction.confidence}% confidence)`
         });
 
-        // Show chat toggle button initially
-        document.getElementById('chatToggle').addEventListener('click', toggleChat);
+        this.reset();
+    });
+
+    function addGame(game) {
+        games.push(game);
+        updateGamesDisplay();
+        updateStats();
+    }
+
+    function updateGamesDisplay() {
+        const gamesContainer = document.getElementById('games');
+        gamesContainer.innerHTML = '';
+
+        games.forEach((game) => {
+            const gameCard = document.createElement('div');
+            gameCard.className = 'game-card';
+            
+            gameCard.innerHTML = `
+                <h3>${game.team1} vs ${game.team2}</h3>
+                <p>Date: ${game.date}</p>
+                <p class="prediction">AI Prediction: ${game.prediction}</p>
+                <p class="update-time">Generated: ${new Date().toLocaleTimeString()}</p>
+            `;
+            gamesContainer.appendChild(gameCard);
+        });
+    }
+
+    addGame({
+        team1: 'Team A',
+        team2: 'Team B',
+        date: '2024-03-20',
+        prediction: 'Team A (75% confidence)'
+    });
+
+    document.getElementById('chatToggle').addEventListener('click', toggleChat);
+</script>
+        
     </script>
 
     <!-- Add Google Fonts link in the head section -->
